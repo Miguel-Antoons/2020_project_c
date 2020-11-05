@@ -7,8 +7,6 @@
 
 #endif //PROJET_2020_CAR_H
 
-
-
 struct Car {
     int idCar;
     double s1;
@@ -20,5 +18,12 @@ struct Car {
     double bestS2;
     double bestS3;
     double BestLap;
+    //stands, out
+    int stand;
+    int out;
+};
 
+struct Session{
+    double tempsSession;
+    int nombreCar;
 };
