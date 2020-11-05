@@ -7,6 +7,8 @@
 
 #endif //PROJET_2020_CAR_H
 
+
+
 struct Car {
     int idCar;
     double s1;
