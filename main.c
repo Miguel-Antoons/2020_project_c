@@ -7,7 +7,11 @@
 int carNumber[20] = {44, 77, 16, 5, 33, 23, 55, 4, 3, 31, 10, 26, 11, 18, 7, 99, 20, 8, 63, 6};
 
 int main(int argc, char *argv[]){
-    struct
+    struct Session session = {.name = "P1", .tempsSession = 5400, .numberCars = 20};
 
-    for(int i = 0; i < )
+    int pid;
+    for(int i = 0; i < session.numberCars; i++){
+        pid = fork();
+
+    }
 }

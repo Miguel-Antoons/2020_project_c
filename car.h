@@ -24,6 +24,7 @@ struct Car {
 };
 
 struct Session{
+    char name;
     double tempsSession;
     int numberCars;
 };
