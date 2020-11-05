@@ -25,5 +25,5 @@ struct Car {
 
 struct Session{
     double tempsSession;
-    int nombreCar;
+    int numberCars;
 };
