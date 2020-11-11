@@ -1,4 +1,5 @@
 file(REMOVE_RECURSE
+  "CMakeFiles/Projet_2020.dir/car.c.o"
   "CMakeFiles/Projet_2020.dir/main.c.o"
   "Projet_2020"
   "Projet_2020.pdb"

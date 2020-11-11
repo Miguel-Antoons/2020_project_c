@@ -1,1 +1,1 @@
-/usr/bin/cc -g   CMakeFiles/Projet_2020.dir/main.c.o  -o Projet_2020 
+/usr/bin/cc -g   CMakeFiles/Projet_2020.dir/main.c.o CMakeFiles/Projet_2020.dir/car.c.o  -o Projet_2020 

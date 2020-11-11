@@ -24,7 +24,8 @@ struct Car {
 };
 
 struct Session{
-    char name;
-    double tempsSession;
-    int numberCars;
+    char[10] file_name;
+    double session_time;
+    int total_cars;
+    int maximum_tours;
 };
