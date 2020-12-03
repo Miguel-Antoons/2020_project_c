@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <semaphore.h>
 #ifndef PROJET_2020_CAR_H
 #define PROJET_2020_CAR_H
 
@@ -34,4 +35,4 @@ struct Session{
     int maximum_tours;
 };
 
-void drive_race_car(struct Car *car, int *carNum);
+void drive_race_car(struct Car *car, const int *carNum, sem_t *prod_sema, sem_t *cons_sema);

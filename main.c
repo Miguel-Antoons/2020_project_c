@@ -8,11 +8,12 @@
 #include <string.h>
 #include <semaphore.h>
 #include <math.h>
-#include "car.h"
+#include "show_scores.h"
 
 #define PRODUCER_FNAME "/display"
 #define CONSUMER_FNAME "/car"
 
+int calculate_max_tours(double total_km);
 void define_session(int argc, char *argv[]);
 
 int car_number[20] = {44, 77, 16, 5, 33, 23, 55, 4, 3, 31, 10, 26, 11, 18, 7, 99, 20, 8, 63, 6}; //Ensemble des nombres utilisés pour les voitures formule 1
