@@ -31,10 +31,11 @@ int stand_time(){
  * si la résistance des pneu est égal à 0, la voiture va au stand, remet des nouveaux pneus
  * on ajoute un noombre aléatoire (20-25) au s3
  */
-int standProbality(struct Car *car){
+void standProbality(struct Car *car){
     car -> tire_lifeTime = car -> tire_lifeTime - (200 + rand() % 50);
     if (car -> tire_lifeTime <= 0){
         car -> tire_lifeTime = 5000 + rand() % 1000;
+        car -> pit++;
         car -> s3 += stand_time();
     }
 }
@@ -59,6 +60,7 @@ void drive_race_car(struct Car *car, const int *carNum, sem_t *prod_sema, sem_t 
 
 
     while (car -> total_time < current_session.session_time || car -> lap < current_session.maximum_tours){
+        sem_wait(cons_sema);
         //secteur 1
         car -> s1 = timeSector();
         if (car -> bestS1 == 0 || car -> bestS1 > car -> s1){
@@ -94,6 +96,7 @@ void drive_race_car(struct Car *car, const int *carNum, sem_t *prod_sema, sem_t 
 
         //nombre de tours
         car -> lap ++;
+        sem_post(prod_sema);
     }
 
 }

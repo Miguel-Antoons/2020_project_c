@@ -25,11 +25,12 @@ struct Car {
     double total_time;
     //stands, out
     int tire_lifeTime;
+    int pit;
     int out;
 };
 
 struct Session{
-    char[10] file_name;
+    char file_name[10];
     double session_time;
     int total_cars;
     int maximum_tours;
