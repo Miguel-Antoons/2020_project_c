@@ -49,7 +49,6 @@ int timeSector(car){
 
 
 void drive_race_car(Car *car, int *carNum){
-    struct Session session;
     /**
      * défini le pid comme la "graine" du random
      */
@@ -58,7 +57,7 @@ void drive_race_car(Car *car, int *carNum){
     car -> tire_lifeTime = 5000 + rand() % 1000;
 
 
-    while (tempsEnCourse <= session.tempsSession){
+    while (tempsEnCourse < current_session.session_time || car -> lap < current_session.max_tours){
         //secteur 1
         car -> s1 = timeSector();
         if (car -> bestS1 == 0 || car -> bestS1 > car -> s1){

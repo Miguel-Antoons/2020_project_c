@@ -33,3 +33,5 @@ struct Session{
     int total_cars;
     int maximum_tours;
 };
+
+void drive_race_car(struct Car *car, int *carNum);

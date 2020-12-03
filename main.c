@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <semaphore.h>
+#include <math.h>
 #include "car.h"
 
 #define PRODUCER_FNAME "/display"
@@ -19,11 +20,6 @@ struct Session current_session;
 
 int main(int argc, char *argv[]){
     struct Car *race_car;               //Pointeur vers la structure Car
-    struct Session session = {          //Paramétrage de la session actuelle
-            .file_name = "P1",
-            .session_time = 5400,
-            .total_cars = 20
-    };
     int shared_mem_id;                  //ID de la mémoire partagée
     pid_t process_id;                   //ID du processus
     sem_t *prod_sema;                    //Sémaphore pour le producteur  (voiture)
@@ -33,7 +29,7 @@ int main(int argc, char *argv[]){
 
 
     //Création du segment de mémoire patagé
-    shared_mem_id = shmget(IPC_PRIVATE, sizeof(struct Car) * session.total_cars, 0600 | IPC_CREAT);
+    shared_mem_id = shmget(IPC_PRIVATE, sizeof(struct Car) * current_session.total_cars, 0600 | IPC_CREAT);
     if(shared_mem_id == -1){
         write(1, "Error while creating the shared memory segment", sizeof("Error while creating the shared memory segment"));
         exit(-1);
@@ -68,7 +64,7 @@ int main(int argc, char *argv[]){
 
     //Création des processus fils
     int i = 0;
-    for( i = 0 ;  i < session.total_cars ; i++ ){
+    for( i = 0 ;  i < current_session.total_cars ; i++ ){
         process_id = fork();
         if((process_id = fork()) == 0){
             break;
@@ -91,7 +87,7 @@ int main(int argc, char *argv[]){
         show_score_table(race_car, prod_sema, cons_sema);
 
         //Cette boucle permet au programme d'attendre que tous les processus enfants se ferment avant de conrinuer le programme
-        for(int j = 0 ; j < session.total_cars ; j++){
+        for(int j = 0 ; j < current_session.total_cars ; j++){
             wait(NULL);
         }
     }
@@ -115,33 +111,18 @@ void define_session(int argc, char *argv[]){
         write(1, "error: incorrect numbers of arguments", sizeof("error: incorrect numbers of arguments"));
         exit(-1);
     }
-    else if (!strcmp(argv[1], "P1") && argc == 2){
+    else if (!strcmp(argv[1], "race") && argc == 2){
         write(1, "error: an additional argument is required with 'P1'", sizeof("error: an additional argument is required with 'P1'"));
         exit(-1);
     }
-    else if (strcmp(argv[1], "P1") && argc == 3){
+    else if (strcmp(argv[1], "race") && argc == 3){
         write(1, "error: too many arguments", sizeof("error: too many arguments"));
         exit(-1);
     }
 
     sprintf(current_session.file_name, "%s.txt", argv[1]);
 
-    if (!strcmp(argv[1], "P1")){
-        total_km = atoi(argv[2]);
-        if (!strcmp(argv[1], "P1") && !total_km){
-            write(1, "error: second argument must be an integer", sizeof("error: second argument must be an integer"));
-            exit(-1);
-        }
-        else if (total_km > 7.1 && total_km < 3.2){
-            write(1, "error: length of a circuit must be between 3.2 and 7.1 km", sizeof("error: length of a circuit must be between 3.2 and 7.1 km"));
-            exit(-1);
-        }
-
-        current_session.session_time = 5400;
-        current_session.total_cars = 20;
-        current_session.maximum_tours = 1000;
-    }
-    else if (!strcmp(argv[1], "P2")){
+    if (!strcmp(argv[1], "P1") || !strcmp(argv[1], "P2")) {
         current_session.session_time = 5400;
         current_session.total_cars = 20;
         current_session.maximum_tours = 1000;
@@ -167,12 +148,31 @@ void define_session(int argc, char *argv[]){
         current_session.maximum_tours = 1000;
     }
     else if (!strcmp(argv[1], "race")){
+        total_km = atoi(argv[2]);
+
+        if (!total_km){
+            write(1, "error: second argument must be an integer", sizeof("error: second argument must be an integer"));
+            exit(-1);
+        }
+        else if (total_km > 7.1 && total_km < 3.2){
+            write(1, "error: length of a circuit must be between 3.2 and 7.1 km", sizeof("error: length of a circuit must be between 3.2 and 7.1 km"));
+            exit(-1);
+        }
+
         current_session.session_time = 7200;
         current_session.total_cars = 20;
-        current_session.maximum_tours = 0;
+        current_session.maximum_tours = calculate_max_tours(total_km);
     }
     else{
         write(1, "error: invalid first argument, first argument must be in [P1, P2, P3, Q1, Q2, Q3, race]", sizeof("error: invalid first argument, first argument must be in [P1, P2, P3, Q1, Q2, Q3, race]"));
         exit(-1);
     }
+}
+
+
+int calculate_max_tours(double total_km){
+    srand(getpid());
+    double random_circuit_length = 300 + rand() % 50;
+
+    return round(random_circuit_length / total_km);
 }
