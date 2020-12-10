@@ -22,7 +22,7 @@ int sort_cars_by_time(const void *a, const void *b){
     }
 }
 
-int set_best_times(struct Car *race_cars){
+void set_best_times(struct Car *race_cars){
     for(int i = 0 ; i < current_session.total_cars ; i++){
         if (best_times.best_lap == 0 || best_times.best_lap > race_cars[i].bestLap){
             best_times.best_lap = i;

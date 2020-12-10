@@ -23,8 +23,6 @@ int main(int argc, char *argv[]){
     struct Car *race_car;               //Pointeur vers la structure Car
     int shared_mem_id;                  //ID de la mémoire partagée
     pid_t process_id;                   //ID du processus
-    sem_t *prod_sema;                    //Sémaphore pour le producteur  (voiture)
-    sem_t *cons_sema;                    //Sémaphore pour le consomateur (afficheur)
 
     define_session(argc, argv);
 
@@ -45,29 +43,43 @@ int main(int argc, char *argv[]){
     }
 
 
-    //Création du sémaphore pour le producteur
-    sem_unlink(PRODUCER_FNAME);
-    prod_sema = sem_open(PRODUCER_FNAME, IPC_CREAT, 0600, 0);
-    if(prod_sema == SEM_FAILED){
-        write(1, "Error while creating the producer semaphore", sizeof("Error while creating the producer semaphore"));
-        exit(-1);
+    //On crée un sémaphore pour la mémoire partagée dont le flag correpond au flag 0600 (plus besoin de créér une nouvelle mémoire partagée)
+    int sem_shmid = shmget(IPC_PRIVATE, sizeof(sem_t), 0600 | IPC_CREAT);
+    if(sem_shmid == -1){
+        printf("shmget failed\n");
+        exit(EXIT_FAILURE);
     }
 
-
-    //Création du sémaphore pour le consomatteur
-    sem_unlink(CONSUMER_FNAME);
-    cons_sema = sem_open(CONSUMER_FNAME, IPC_CREAT, 0660, 1);
-    if(cons_sema == SEM_FAILED){
-        write(1, "Error while creating the consumer semaphore", sizeof("Error while creating the consumer semaphore"));
-        exit(-1);
+    //Attachement du sémaphore au segment de mémoire partagée
+    sem_t *cons_sema = shmat(sem_shmid, NULL, 0);
+    if(cons_sema == (void *)(-1)){
+        printf("shmat failed");
+        exit(EXIT_FAILURE);
     }
+
+    sem_shmid = shmget(IPC_PRIVATE, sizeof(sem_t), 0600 | IPC_CREAT);
+    if(sem_shmid == -1){
+        printf("shmget failed\n");
+        exit(EXIT_FAILURE);
+    }
+
+    //Attachement du sémaphore au segment de mémoire partagée
+    sem_t *prod_sema = shmat(sem_shmid, NULL, 0);
+    if(prod_sema == (void *)(-1)){
+        printf("shmat failed");
+        exit(EXIT_FAILURE);
+    }
+
+    //Initialisation d'un nouveau sémaphore sur sema
+    sem_init(cons_sema, 1, 1);
+    sem_init(prod_sema, 1, 0);
 
 
     //Création des processus fils
-    int i = 0;
+    int i;
     for( i = 0 ;  i < current_session.total_cars ; i++ ){
         process_id = fork();
-        if((process_id = fork()) == 0){
+        if(process_id == 0){
             break;
         }
     }
@@ -175,5 +187,5 @@ int calculate_max_tours(double total_km){
     srand(getpid());
     double random_circuit_length = 300 + rand() % 50;
 
-    return round(random_circuit_length / total_km);
+    return (int) round(random_circuit_length / total_km);
 }
