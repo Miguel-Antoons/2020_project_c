@@ -49,7 +49,7 @@ void set_best_times(){
 
 void build_table(){
     set_best_times();
-    system("clear");
+    //system("clear");
     printf("|\tPos.\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|\n\n", "Nr", "S1", "S2", "S3", "Lap Time", "Lap Nr", "Pit", "OUT");
 
     for(int i = 0 ; i < current_session.total_cars ; i++){
@@ -68,6 +68,7 @@ void build_table(){
 void show_score_table(struct Car *race_cars, sem_t *prod_sema, sem_t *cons_sema){
     while (1){
         sem_wait(prod_sema);
+        write(1, "\nprocessus père\n", sizeof("\nprocessus père\n"));
         memcpy(race_copy, race_cars, sizeof(struct Car) * current_session.total_cars);
         sem_post(cons_sema);
 
@@ -78,5 +79,6 @@ void show_score_table(struct Car *race_cars, sem_t *prod_sema, sem_t *cons_sema)
         if (race_copy[current_session.total_cars - 1].out){
             break;
         }
+        write(1, "\nfin processus père\n", sizeof("\nfin processus père\n"));
     }
 }

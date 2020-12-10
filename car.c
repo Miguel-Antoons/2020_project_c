@@ -9,9 +9,11 @@ struct Session current_session;
  * Chance pour la voiture ait un crash
  * si le nombre aléatoire vaut 1 alors elle est out
  */
-void crashProbality(struct Car *car){
+void crashProbality(struct Car *car, sem_t *prod_sema){
     if(rand() % 500 == 1){
         car -> out = 1;
+        write(1, "\nthis could be the bug\n", sizeof("\nthis could be the bug\n"));
+        sem_post(prod_sema);
         exit(0);
     }
 }
@@ -43,10 +45,12 @@ void standProbality(struct Car *car){
 /**
  * @return nombre random entre 35 et 50 seconde pour chaque secteur
  */
-int timeSector(){
+float timeSector(){
     int min = 35;
-    int max = 50;
-    return min + rand() % (max - min);
+    int max = 49;
+    float scale = rand() / (float)RAND_MAX;     // [0, 1.0]
+
+    return min + rand() % (max - min) + scale;  // [min, max]
 }
 
 
@@ -60,21 +64,21 @@ void drive_race_car(struct Car *car, const int *carNum, sem_t *prod_sema, sem_t 
 
     while (car -> total_time < current_session.session_time || car -> lap < current_session.maximum_tours){
         sem_wait(cons_sema);
-        write(1, "\nDébut de l'enfant\n", sizeof("\nDébut de l'enfant\n"));
-
+        write(1, "\nprocessus fils\n", sizeof("\nprocessus fils\n"));
         //secteur 1
         car -> s1 = timeSector();
         if (car -> bestS1 == 0 || car -> bestS1 > car -> s1){
             car -> bestS1 = car -> s1;
         }
-        crashProbality(car);
+
+        crashProbality(car, prod_sema);
 
         //secteur 2
         car -> s2 = timeSector();
         if (car -> bestS2 == 0 || car -> bestS1 > car -> s2){
             car -> bestS2 = car -> s2;
         }
-        crashProbality(car);
+        crashProbality(car, prod_sema);
 
         //secteur 3
         car -> s3 = timeSector();
@@ -82,7 +86,7 @@ void drive_race_car(struct Car *car, const int *carNum, sem_t *prod_sema, sem_t 
         if (car -> bestS3 == 0 || car -> bestS3 > car -> s3){
             car -> bestS3 = car -> s3;
         }
-        crashProbality(car);
+        crashProbality(car, prod_sema);
 
         // temps du tour
         car -> totalLap = car -> s1 + car -> s2 + car -> s3;
@@ -97,9 +101,11 @@ void drive_race_car(struct Car *car, const int *carNum, sem_t *prod_sema, sem_t 
 
         //nombre de tours
         car -> lap ++;
-
+        if (car -> total_time > current_session.session_time){
+            car -> out = 1;
+        }
         sem_post(prod_sema);
-        write(1, "\nFin de l'enfant\n", sizeof("\nFin de l'enfant\n"));
+        write(1, "\n fin du processus fils\n", sizeof("\n fin du processus fils\n"));
     }
 
 }
