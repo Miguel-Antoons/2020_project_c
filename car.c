@@ -11,8 +11,7 @@ struct Session current_session;
  */
 void crashProbality(struct Car *car, sem_t *prod_sema){
     if(rand() % 500 == 1){
-        car -> out = 1;
-        write(1, "\nthis could be the bug\n", sizeof("\nthis could be the bug\n"));
+        car -> crashed = 1;
         sem_post(prod_sema);
         exit(0);
     }
@@ -49,8 +48,7 @@ float timeSector(){
     int min = 35;
     int max = 49;
     float scale = rand() / (float)RAND_MAX;     // [0, 1.0]
-
-    return min + rand() % (max - min) + scale;  // [min, max]
+    return (float) min + rand() % (max - min) + scale;  // [min, max]
 }
 
 
@@ -86,7 +84,6 @@ void drive_race_car(struct Car *car, const int *carNum, sem_t *prod_sema, sem_t 
         if (car -> bestS3 == 0 || car -> bestS3 > car -> s3){
             car -> bestS3 = car -> s3;
         }
-        crashProbality(car, prod_sema);
 
         // temps du tour
         car -> totalLap = car -> s1 + car -> s2 + car -> s3;
@@ -101,8 +98,11 @@ void drive_race_car(struct Car *car, const int *carNum, sem_t *prod_sema, sem_t 
 
         //nombre de tours
         car -> lap ++;
+        crashProbality(car, prod_sema);
         if (car -> total_time > current_session.session_time){
-            car -> out = 1;
+            car -> finished = 1;
+            sem_post(prod_sema);
+            exit(0);
         }
         sem_post(prod_sema);
         write(1, "\n fin du processus fils\n", sizeof("\n fin du processus fils\n"));

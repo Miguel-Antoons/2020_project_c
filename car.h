@@ -26,7 +26,8 @@ struct Car {
     //stands, out
     int tire_lifeTime;
     int pit;
-    int out;
+    int finished;
+    int crashed;
 };
 
 struct Session{
