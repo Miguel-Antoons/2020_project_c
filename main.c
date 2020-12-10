@@ -97,6 +97,7 @@ int main(int argc, char *argv[]){
     }
     else{
         //Processus parent
+        write(1, "je suis le parent", sizeof("je suis le parent"));
         show_score_table(race_car, prod_sema, cons_sema);
 
         //Cette boucle permet au programme d'attendre que tous les processus enfants se ferment avant de conrinuer le programme

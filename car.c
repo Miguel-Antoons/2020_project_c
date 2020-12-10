@@ -58,9 +58,10 @@ void drive_race_car(struct Car *car, const int *carNum, sem_t *prod_sema, sem_t 
     car -> idCar = *carNum;
     car -> tire_lifeTime = 5000 + rand() % 1000;
 
-
     while (car -> total_time < current_session.session_time || car -> lap < current_session.maximum_tours){
         sem_wait(cons_sema);
+        write(1, "\nDébut de l'enfant\n", sizeof("\nDébut de l'enfant\n"));
+
         //secteur 1
         car -> s1 = timeSector();
         if (car -> bestS1 == 0 || car -> bestS1 > car -> s1){
@@ -96,7 +97,9 @@ void drive_race_car(struct Car *car, const int *carNum, sem_t *prod_sema, sem_t 
 
         //nombre de tours
         car -> lap ++;
+
         sem_post(prod_sema);
+        write(1, "\nFin de l'enfant\n", sizeof("\nFin de l'enfant\n"));
     }
 
 }
