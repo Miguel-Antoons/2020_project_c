@@ -30,6 +30,27 @@ int sort_cars_by_time(const void *a, const void *b){
     }
 }
 
+int sort_cars_by_lap(const void *a, const void *b){
+    const struct Car *position_1 = (struct Car *) a;
+    const struct Car *position_2 = (struct Car *) b;
+
+    if (!position_1->lap || position_1->crashed){
+        return 1;
+    }
+    else if (!position_2->lap || position_2->crashed){
+        return -1;
+    }
+    else if (position_1->lap < position_2->lap){
+        return 1;
+    }
+    else if (position_1->lap > position_2->lap){
+        return -1;
+    }
+    else {
+        return 0;
+    }
+}
+
 void set_best_times(){
     best_times = empty_best_times;
     for(int i = 0 ; i < current_session.total_cars ; i++){
@@ -67,8 +88,20 @@ void build_table(){
     printf("Best Sector 2 : %d [%.3f]\t", best_times.best_s2_index, best_times.best_s2);
     printf("Best Sector 3 : %d [%.3f]\t", best_times.best_s3_index, best_times.best_s3);
     printf("Best Lap : %d [%.3f]\t\n", best_times.best_lap_index, best_times.best_lap);
-    usleep(300000);
+    usleep(300);
 
+}
+
+void build_final_table(){
+    system("clear");
+    printf("|\tPos.\t|%5s\t|%10s\t|\n\n", "Nr", "BEST LAP");
+
+    for(int i = 0 ; i < current_session.total_cars ; i++){
+        struct Car single_car = race_copy[i];
+
+        printf("|\t%d\t|%5d\t|%10.3f\t|\n", i + 1, single_car.idCar, single_car.bestLap);
+    }
+    sleep(5);
 }
 
 void show_score_table(struct Car *race_cars, sem_t *prod_sema, sem_t *cons_sema){
@@ -79,7 +112,12 @@ void show_score_table(struct Car *race_cars, sem_t *prod_sema, sem_t *cons_sema)
         memcpy(race_copy, race_cars, sizeof(struct Car) * current_session.total_cars);
         sem_post(cons_sema);
 
-        qsort(race_copy, current_session.total_cars, sizeof(struct Car), sort_cars_by_time);
+        if (current_session.maximum_tours < 500){
+            qsort(race_copy, current_session.total_cars, sizeof(struct Car), sort_cars_by_lap);
+        }
+        else {
+            qsort(race_copy, current_session.total_cars, sizeof(struct Car), sort_cars_by_time);
+        }
 
         build_table();
 
@@ -89,6 +127,7 @@ void show_score_table(struct Car *race_cars, sem_t *prod_sema, sem_t *cons_sema)
             }
         }
         if (game_is_finished){
+            build_final_table();
             break;
         }
     }

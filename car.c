@@ -30,7 +30,7 @@ int stand_time(){
  * Chance pour que la voiture aille au stand
  * La résistance de pneu (5000 - 6000) - un nombre random entre 0 et 250 pour chaque tour
  * si la résistance des pneu est égal à 0, la voiture va au stand, remet des nouveaux pneus
- * on ajoute un noombre aléatoire (20-25) au s3
+ * on ajoute un nombre aléatoire (20-25) au s3
  */
 void standProbality(struct Car *car){
     car -> tire_lifeTime = car -> tire_lifeTime - (200 + rand() % 50);
@@ -60,9 +60,8 @@ void drive_race_car(struct Car *car, const int *carNum, sem_t *prod_sema, sem_t 
     car -> idCar = *carNum;
     car -> tire_lifeTime = 5000 + rand() % 1000;
 
-    while (car -> total_time < current_session.session_time || car -> lap < current_session.maximum_tours){
+    while (car -> total_time < current_session.session_time || car -> lap <= current_session.maximum_tours){
         sem_wait(cons_sema);
-        write(1, "\nprocessus fils\n", sizeof("\nprocessus fils\n"));
         //secteur 1
         car -> s1 = timeSector();
         if (car -> bestS1 == 0 || car -> bestS1 > car -> s1){
@@ -99,13 +98,12 @@ void drive_race_car(struct Car *car, const int *carNum, sem_t *prod_sema, sem_t 
         //nombre de tours
         car -> lap ++;
         crashProbality(car, prod_sema);
-        if (car -> total_time > current_session.session_time){
+        if (car -> total_time >= current_session.session_time || car -> lap == current_session.maximum_tours){
             car -> finished = 1;
             sem_post(prod_sema);
             exit(0);
         }
         sem_post(prod_sema);
-        write(1, "\n fin du processus fils\n", sizeof("\n fin du processus fils\n"));
     }
 
 }
