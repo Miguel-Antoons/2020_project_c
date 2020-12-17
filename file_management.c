@@ -17,7 +17,6 @@ void writeClassement(struct Car *race_copy, struct Session current_session){
 
 
 void print_previous_ranking(struct Car *race_copy, struct Session current_session){
-	printf("%s", "HELLO : \n");
 	char *string_to_read;
 	
 	int numeroCar[current_session.total_cars]; //On vide le tableau
@@ -35,7 +34,7 @@ void print_previous_ranking(struct Car *race_copy, struct Session current_sessio
 	else if(!strcmp(current_session.file_name, "race.txt")){
 		file = fopen("Q3.txt", "r");
 	}
-	else{}
+	else{file = NULL;}
 	
 	if(file != NULL){
         i=0;
