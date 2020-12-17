@@ -13,11 +13,11 @@
 #define PRODUCER_FNAME "/display"
 #define CONSUMER_FNAME "/car"
 
-int calculate_max_tours(double total_km);
-void define_session(int argc, char *argv[]);
+int calculate_max_tours(double total_km);       // Signature de la fonction
+void define_session(int argc, char *argv[]);    // Signature de la fonction
 
-int car_number[20] = {44, 77, 16, 5, 33, 23, 55, 4, 3, 31, 10, 26, 11, 18, 7, 99, 20, 8, 63, 6}; //Ensemble des nombres utilisés pour les voitures formule 1
-struct Session current_session;
+int car_number[20] = {44, 77, 16, 5, 33, 23, 55, 4, 3, 31, 10, 26, 11, 18, 7, 99, 20, 8, 63, 6}; //Ensmeble des numéros des voitures dans la course
+struct Session current_session;     // Contiendra les paramètres de la session courante
 
 int main(int argc, char *argv[]){
     struct Car *race_car;               //Pointeur vers la structure Car
@@ -84,7 +84,7 @@ int main(int argc, char *argv[]){
         }
     }
 
-
+    // Gestion des fonctions en fonction de l'id du processus
     if(process_id == -1){
         //En cas d'erreur du fork
         write(1, "Error while forking", sizeof("Error while forking"));
@@ -116,25 +116,31 @@ int main(int argc, char *argv[]){
     return 0;
 }
 
-
+/**
+ * Paramètrage de la session courante en fonction des arguments entrées en paramètre
+ * @param argc : nombre d'arguments entrées par l'utilisateur
+ * @param argv : tableau avec les arguments entrées en paramètres
+ */
 void define_session(int argc, char *argv[]){
-    double total_km = 0;
+    double total_km;    // Variable qui contiendra le total de kilomètres par tour
 
+    // On vérifie si le nombre de paramètres entrées est correcte
     if (argc < 2 || argc > 4){
-        write(1, "error: incorrect numbers of arguments", sizeof("error: incorrect numbers of arguments"));
+        write(1, "error: incorrect numbers of arguments, enter [P1, P2, P3, Q1, Q2, Q3, RACE]", sizeof("error: incorrect numbers of arguments, enter [P1, P2, P3, Q1, Q2, Q3, RACE]"));
         exit(-1);
     }
-    else if (!strcmp(argv[1], "race") && argc == 2){
-        write(1, "error: an additional argument is required with 'P1'", sizeof("error: an additional argument is required with 'P1'"));
+    else if (!strcmp(argv[1], "RACE") && argc == 2){
+        write(1, "error: an additional argument is required with 'RACE'", sizeof("error: an additional argument is required with 'RACE'"));
         exit(-1);
     }
-    else if (strcmp(argv[1], "race") && argc == 3){
+    else if (strcmp(argv[1], "RACE") && argc == 3){
         write(1, "error: too many arguments", sizeof("error: too many arguments"));
         exit(-1);
     }
 
-    sprintf(current_session.file_name, "%s.txt", argv[1]);
+    sprintf(current_session.file_name, "%s.txt", argv[1]);  // On définiti le nom du fichier à enregistrer
 
+    // Paramètreage de la session en fonction des arguments
     if (!strcmp(argv[1], "P1") || !strcmp(argv[1], "P2")) {
         current_session.session_time = 5400;
         current_session.total_cars = 20;
@@ -161,7 +167,7 @@ void define_session(int argc, char *argv[]){
         current_session.total_cars = 10;
         current_session.maximum_tours = 1000;
     }
-    else if (!strcmp(argv[1], "race")){
+    else if (!strcmp(argv[1], "RACE")){
         total_km = atoi(argv[2]);
 
         if (!total_km){
@@ -178,12 +184,17 @@ void define_session(int argc, char *argv[]){
         current_session.maximum_tours = calculate_max_tours(total_km);
     }
     else{
-        write(1, "error: invalid first argument, first argument must be in [P1, P2, P3, Q1, Q2, Q3, race]", sizeof("error: invalid first argument, first argument must be in [P1, P2, P3, Q1, Q2, Q3, race]"));
+        write(1, "error: invalid first argument, first argument must be in [P1, P2, P3, Q1, Q2, Q3, RACE]", sizeof("error: invalid first argument, first argument must be in [P1, P2, P3, Q1, Q2, Q3, RACE]"));
         exit(-1);
     }
 }
 
-
+/**
+ * On caculle le nombre de tours de la course en fonction des nombres de kilomètres par tour.
+ * Une course comptera entre 300 et 350 km
+ * @param total_km : kilomètres par tour
+ * @return : nombre de tours de la course
+ */
 int calculate_max_tours(double total_km){
     srand(getpid());
     double random_circuit_length = 300 + rand() % 50;
