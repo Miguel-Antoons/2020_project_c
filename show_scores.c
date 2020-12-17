@@ -110,11 +110,13 @@ void show_score_table(struct Car *race_cars, sem_t *prod_sema, sem_t *cons_sema)
 		
         int game_is_finished = 1;
         sem_wait(prod_sema);
-		
-		
-		
         memcpy(race_copy, race_cars, sizeof(struct Car) * current_session.total_cars);
         sem_post(cons_sema);
+
+        if (current_session.first_lap == 0){
+            current_session.first_lap++;
+            print_previous_ranking(race_copy, current_session);
+        }
 
         if (current_session.maximum_tours < 500){
             qsort(race_copy, current_session.total_cars, sizeof(struct Car), sort_cars_by_lap);
@@ -133,12 +135,6 @@ void show_score_table(struct Car *race_cars, sem_t *prod_sema, sem_t *cons_sema)
         if (game_is_finished){
             build_final_table();
 			writeClassement(race_copy, current_session);
-			
-			if (current_session.first_lap == 0){
-				printf("%s", "test");
-				current_session.first_lap++;
-				print_previous_ranking(race_copy, current_session);
-			}
             break;
         }
     }
