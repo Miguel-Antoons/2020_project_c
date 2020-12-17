@@ -1,6 +1,7 @@
 //
 // Created by miguel on 2/11/20.
 //
+#include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -36,6 +37,7 @@ struct Session{
     int total_cars;
     int maximum_tours;
 	int first_lap;
+	int driving_cars[20];
 };
 
 void drive_race_car(struct Car *car, const int *carNum, sem_t *prod_sema, sem_t *cons_sema);

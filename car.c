@@ -10,7 +10,7 @@ struct Session current_session;
  * si le nombre aléatoire vaut 1 alors elle est out
  */
 void crashProbality(struct Car *car, sem_t *prod_sema){
-    if(rand() % 500 == 1){
+    if(rand() % 5000 == 1){
         car -> crashed = 1;
         sem_post(prod_sema);
         exit(0);
@@ -51,14 +51,24 @@ float timeSector(){
     return (float) min + rand() % (max - min) + scale;  // [min, max]
 }
 
-
+/**
+ * Point d'entrée du processus fils
+ * @param car : une partie de la mémoire partagée
+ * @param carNum : numéro unique de la voiture
+ * @param prod_sema : sémaphore du producteur (processus fils)
+ * @param cons_sema : sémaphore du consommateur (processus père)
+ */
 void drive_race_car(struct Car *car, const int *carNum, sem_t *prod_sema, sem_t *cons_sema){
-    /**
-     * défini le pid comme la "graine" du random
-     */
     srand(getpid());
     car -> idCar = *carNum;
     car -> tire_lifeTime = 5000 + rand() % 1000;
+
+    // on reagerde si la voiture peut participer à la course
+    for (int i = 0 ; i < 20 ; i++){
+        if (current_session.driving_cars[i] == *carNum){
+            exit(0);
+        }
+    }
 
     while (car -> total_time < current_session.session_time || car -> lap <= current_session.maximum_tours){
         sem_wait(cons_sema);

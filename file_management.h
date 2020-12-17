@@ -13,5 +13,5 @@
 #include "car.h"
 
 
-void writeClassement(struct Car *race_copy, struct Session current_session);
-void print_previous_ranking(struct Car *race_copy, struct Session current_session);
+void writeClassement(struct Car *race_copy);
+void print_previous_ranking();

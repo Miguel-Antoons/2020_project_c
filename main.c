@@ -28,7 +28,7 @@ int main(int argc, char *argv[]){
 
 
     //Création du segment de mémoire patagé
-    shared_mem_id = shmget(IPC_PRIVATE, sizeof(struct Car) * current_session.total_cars, 0600 | IPC_CREAT);
+    shared_mem_id = shmget(IPC_PRIVATE, sizeof(struct Car) * 20, 0600 | IPC_CREAT);
     if(shared_mem_id == -1){
         write(1, "Error while creating the shared memory segment", sizeof("Error while creating the shared memory segment"));
         exit(-1);
@@ -74,10 +74,11 @@ int main(int argc, char *argv[]){
     sem_init(cons_sema, 1, 1);
     sem_init(prod_sema, 1, 0);
 
+    print_previous_ranking(&current_session);
 
     //Création des processus fils
     int i;
-    for( i = 0 ;  i < current_session.total_cars ; i++ ){
+    for( i = 0 ;  i < 20 ; i++ ){
         process_id = fork();
         if(process_id == 0){
             break;
@@ -99,8 +100,8 @@ int main(int argc, char *argv[]){
         //Processus parent
         show_score_table(race_car, prod_sema, cons_sema);
 
-        //Cette boucle permet au programme d'attendre que tous les processus enfants se ferment avant de conrinuer le programme
-        for(int j = 0 ; j < current_session.total_cars ; j++){
+        //Cette boucle permet au programme d'attendre que tous les processus enfants se ferment avant de continuer le programme
+        for(int j = 0 ; j < 20 ; j++){
             wait(NULL);
         }
     }

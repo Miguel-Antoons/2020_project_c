@@ -5,18 +5,24 @@
 #include "show_scores.h"
 
 struct Session current_session;
-struct BestTimes best_times;
-struct BestTimes empty_best_times;
+struct BestTimes best_times;            // structure qui contiendra les meilleurs temps de la course
+struct BestTimes empty_best_times;      // structure vide
 struct Car race_copy[20];
 
+/**
+ * Fonction de triage selon le meilleur temps de tour
+ * @param a : voiture a
+ * @param b : voiture b
+ * @return : l'évolution de la voiture b dans le tableau
+ */
 int sort_cars_by_time(const void *a, const void *b){
     const struct Car *position_1 = (struct Car *) a;
     const struct Car *position_2 = (struct Car *) b;
 
-    if (position_1->bestLap == 0){
+    if (!position_1->bestLap || !position_1->bestS1){
         return 1;
     }
-    else if (position_2->bestLap == 0){
+    else if (!position_2->bestLap || !position_2->bestS1){
         return -1;
     }
     else if (position_1->bestLap > position_2->bestLap){
@@ -30,15 +36,27 @@ int sort_cars_by_time(const void *a, const void *b){
     }
 }
 
+/**
+ * Fonction de triage selon le nombre de tours parcourru
+ * @param a : voiture a
+ * @param b : voiture b
+ * @return : l'évolution de la voiture b dans le tableau
+ */
 int sort_cars_by_lap(const void *a, const void *b){
     const struct Car *position_1 = (struct Car *) a;
     const struct Car *position_2 = (struct Car *) b;
 
-    if (!position_1->lap || position_1->crashed){
+    if ((!position_2->lap || position_2->crashed) && (position_1->lap > position_2->lap)){
+        return -1;
+    }
+    else if ((!position_1->lap || position_1->crashed) && (position_1->lap < position_2->lap)){
         return 1;
     }
     else if (!position_2->lap || position_2->crashed){
         return -1;
+    }
+    else if (!position_1->lap || position_1->crashed){
+        return 1;
     }
     else if (position_1->lap < position_2->lap){
         return 1;
@@ -46,11 +64,20 @@ int sort_cars_by_lap(const void *a, const void *b){
     else if (position_1->lap > position_2->lap){
         return -1;
     }
+    else if (position_1->total_time > position_2->total_time){
+        return 1;
+    }
+    else if (position_1->total_time < position_2->total_time){
+        return -1;
+    }
     else {
         return 0;
     }
 }
 
+/**
+ * Enregistre les meilleurs temps dans la structure best_times
+ */
 void set_best_times(){
     best_times = empty_best_times;
     for(int i = 0 ; i < current_session.total_cars ; i++){
@@ -74,6 +101,9 @@ void set_best_times(){
 
 }
 
+/**
+ * Imprime le tableaux des voitures à l'écran
+ */
 void build_table(){
     set_best_times();
     system("clear");
@@ -88,12 +118,15 @@ void build_table(){
     printf("Best Sector 2 : %d [%.3f]\t", best_times.best_s2_index, best_times.best_s2);
     printf("Best Sector 3 : %d [%.3f]\t", best_times.best_s3_index, best_times.best_s3);
     printf("Best Lap : %d [%.3f]\t\n", best_times.best_lap_index, best_times.best_lap);
-    usleep(300);
+    usleep(300000);
 
 }
 
+/**
+ * Construit la table des voitures finale, cette table est simplifiée
+ */
 void build_final_table(){
-    //system("clear");
+    system("clear");
     printf("|\tPos.\t|%5s\t|%10s\t|\n\n", "Nr", "BEST LAP");
 
     for(int i = 0 ; i < current_session.total_cars ; i++){
@@ -104,38 +137,42 @@ void build_final_table(){
     sleep(5);
 }
 
-
+/**
+ * Point d'entrée du processus père
+ * @param race_cars : mémoire patagée
+ * @param prod_sema : sémaphore du producteur (processus fils)
+ * @param cons_sema : sémaphore du consommateur (processus père)
+ */
 void show_score_table(struct Car *race_cars, sem_t *prod_sema, sem_t *cons_sema){
     while (1){
-		
         int game_is_finished = 1;
+
+        // on fait une copie de la mémoire partagée
         sem_wait(prod_sema);
-        memcpy(race_copy, race_cars, sizeof(struct Car) * current_session.total_cars);
+        memcpy(race_copy, race_cars, sizeof(struct Car) * 20);
         sem_post(cons_sema);
 
-        if (current_session.first_lap == 0){
-            current_session.first_lap++;
-            print_previous_ranking(race_copy, current_session);
-            continue;
-        }
-
+        // on regarde si c'est la course finale
         if (current_session.maximum_tours < 500){
-            qsort(race_copy, current_session.total_cars, sizeof(struct Car), sort_cars_by_lap);
+            qsort(race_copy, 20, sizeof(struct Car), sort_cars_by_lap);
         }
         else {
-            qsort(race_copy, current_session.total_cars, sizeof(struct Car), sort_cars_by_time);
+            qsort(race_copy, 20, sizeof(struct Car), sort_cars_by_time);
         }
 
         build_table();
 
+        // on regarde s'il y a encore des voitures qui roulent
         for (int i = 0 ; i < current_session.total_cars ; i++){
             if (!race_copy[i].finished && !race_copy[i].crashed){
                 game_is_finished = 0;
             }
         }
+
+        // s'il il n'y a plus de voitures qui roulent, on interrompt la boucle
         if (game_is_finished){
             build_final_table();
-			writeClassement(race_copy, current_session);
+			writeClassement(race_copy);
             break;
         }
     }
