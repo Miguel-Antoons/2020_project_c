@@ -139,6 +139,7 @@ void define_session(int argc, char *argv[]){
         current_session.session_time = 5400;
         current_session.total_cars = 20;
         current_session.maximum_tours = 1000;
+		current_session.first_lap = 1;
     }
     else if (!strcmp(argv[1], "P3")){
         current_session.session_time = 3600;

@@ -6,7 +6,6 @@
 #include <unistd.h>
 #include <semaphore.h>
 #include <string.h>
-#include "car.h"
 #include "file_management.h"
 
 #ifndef PROJET_2020_SHOW_SCORES_H

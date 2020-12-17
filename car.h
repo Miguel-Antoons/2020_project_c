@@ -35,6 +35,7 @@ struct Session{
     double session_time;
     int total_cars;
     int maximum_tours;
+	int first_lap;
 };
 
 void drive_race_car(struct Car *car, const int *carNum, sem_t *prod_sema, sem_t *cons_sema);
