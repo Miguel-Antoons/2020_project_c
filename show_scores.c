@@ -116,6 +116,7 @@ void show_score_table(struct Car *race_cars, sem_t *prod_sema, sem_t *cons_sema)
         if (current_session.first_lap == 0){
             current_session.first_lap++;
             print_previous_ranking(race_copy, current_session);
+            continue;
         }
 
         if (current_session.maximum_tours < 500){
