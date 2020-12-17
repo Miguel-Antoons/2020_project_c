@@ -9,7 +9,6 @@ void writeClassement(struct Car *race_copy, struct Session current_session){
 	
 	if (file != NULL){
 		for(int i = 0; i < current_session.total_cars; i++){
-			printf("%d", race_copy[i].idCar);
 			fprintf(file, "%d\n", race_copy[i].idCar);
 		}
 		fclose(file);
@@ -18,26 +17,45 @@ void writeClassement(struct Car *race_copy, struct Session current_session){
 
 
 void print_previous_ranking(struct Car *race_copy, struct Session current_session){
+	printf("%s", "HELLO : \n");
 	char *string_to_read;
-	int size;
-
-	FILE* file = fopen(current_session.file_name, "r");
-	size = 11;
 	
-	if (file == NULL){	
-		printf("Erreur d'ouverture du fichier");
-	}
-	
-	else {
-		printf("Le fichier est ouvert\n");
-	}
-	int i;
-	/* verification si le fichier est bien ouvert */
-	while(string_to_read = fgets(string_to_read, size, file)  != EOF){
-		tab[i]=string_to_read;
-		i++;
-	}
-	fclose(file);
-	/* Fermeture du fichier */
+	int numeroCar[current_session.total_cars]; //On vide le tableau
+    char chaine[5] = "";
+    int i;
+	FILE* file;
 
+
+	if(!strcmp(current_session.file_name, "Q2.txt")){
+		file = fopen("Q1.txt", "r");
+	}
+	else if(!strcmp(current_session.file_name, "Q3.txt")){
+		file = fopen("Q2.txt", "r");
+	}
+	else if(!strcmp(current_session.file_name, "race.txt")){
+		file = fopen("Q3.txt", "r");
+	}
+	else{}
+	
+	if(file != NULL){
+        i=0;
+
+        while(fgets(chaine, 5, file)){
+			numeroCar[i] = atoi(chaine);
+            i++;
+		}
+		
+		printf("|\tPos.\t|%5s\t|%10s\t|%10s\t|%10s\t|%10s\t|%7s\t|%5s\t|%5s\t|%10s\t|\n\n", "Nr", "S1", "S2", "S3", "Lap Time", "Lap Nr", "Pit", "CRASH", "FINISHED");
+		
+		int u;
+		for(u = 0; u < current_session.total_cars; u++){
+			printf("|\t%d\t|%5d\t|%10.3f\t|%10.3f\t|%10.3f\t|%10.3f\t|%7d\t|%5d\t|%5d\t|%10d\t|\n", i + 1, numeroCar[u], 0.000, 0.000, 0.000, 0.000, 0, 0, 0, 0);	
+		}
+		printf("\n Best Sector 1 : %d [%.3f]\t", 0, 0.000);
+		printf("Best Sector 2 : %d [%.3f]\t", 0, 0.000);
+		printf("Best Sector 3 : %d [%.3f]\t", 0, 0.000);
+		printf("Best Lap : %d [%.3f]\t\n", 0, 0.000);
+		
+	}
+	sleep(5);
 }
