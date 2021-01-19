@@ -143,7 +143,7 @@ void build_final_table(){
  * @param prod_sema : sémaphore du producteur (processus fils)
  * @param cons_sema : sémaphore du consommateur (processus père)
  */
-void show_score_table(struct Car *race_cars, sem_t *prod_sema, sem_t *cons_sema){
+void show_score_table(struct Car *race_cars, sem_t * cons_sema, sem_t * prod_sema){
     while (1){
         int game_is_finished = 1;
 

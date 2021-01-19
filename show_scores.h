@@ -24,4 +24,4 @@ struct BestTimes{
     int best_lap_index;
 };
 
-void show_score_table(struct Car *race_cars, sem_t *prod_sema, sem_t *cons_sema);
+void show_score_table(struct Car *race_cars, sem_t * cons_sema, sem_t * prod_sema);

@@ -6,6 +6,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <semaphore.h>
+#include <fcntl.h>
+#include <semaphore.h>
 #ifndef PROJET_2020_CAR_H
 #define PROJET_2020_CAR_H
 
@@ -40,4 +42,4 @@ struct Session{
 	int driving_cars[20];
 };
 
-void drive_race_car(struct Car *car, const int *carNum, sem_t *prod_sema, sem_t *cons_sema);
+void drive_race_car(struct Car *car, const int *carNum, sem_t * cons_sema, sem_t * prod_sema);

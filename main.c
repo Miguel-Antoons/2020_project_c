@@ -6,12 +6,11 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <string.h>
-#include <semaphore.h>
 #include <math.h>
 #include "show_scores.h"
 
-#define PRODUCER_FNAME "/display"
-#define CONSUMER_FNAME "/car"
+#define PRODUCER_SEM_FNAME "/prod_sema"
+#define CONSUMER_SEM_FNAME "/cons_sema"
 
 int calculate_max_tours(double total_km);       // Signature de la fonction
 void define_session(int argc, char *argv[]);    // Signature de la fonction
@@ -28,7 +27,7 @@ int main(int argc, char *argv[]){
 
 
     //Création du segment de mémoire patagé
-    shared_mem_id = shmget(IPC_PRIVATE, sizeof(struct Car) * 20, 0600 | IPC_CREAT);
+    shared_mem_id = shmget(IPC_PRIVATE, sizeof(struct Car) * 20, IPC_CREAT | 0660);
     if(shared_mem_id == -1){
         write(1, "Error while creating the shared memory segment", sizeof("Error while creating the shared memory segment"));
         exit(-1);
@@ -42,37 +41,22 @@ int main(int argc, char *argv[]){
         exit(-1);
     }
 
+    // On suppimme les sémaphores si ils existent
+    sem_unlink(PRODUCER_SEM_FNAME);
+    sem_unlink(CONSUMER_SEM_FNAME);
 
-    //On crée un sémaphore pour la mémoire partagée dont le flag correpond au flag 0600 (plus besoin de créér une nouvelle mémoire partagée)
-    int sem_shmid = shmget(IPC_PRIVATE, sizeof(sem_t), 0600 | IPC_CREAT);
-    if(sem_shmid == -1){
-        printf("shmget failed\n");
+    // On crées et initialise les sémaphores
+    sem_t * cons_sema = sem_open(CONSUMER_SEM_FNAME, O_CREAT, 0660, 0);
+    if (cons_sema == SEM_FAILED) {
+        perror("sem_open/cons_sema");
         exit(EXIT_FAILURE);
     }
 
-    //Attachement du sémaphore au segment de mémoire partagée
-    sem_t *cons_sema = shmat(sem_shmid, NULL, 0);
-    if(cons_sema == (void *)(-1)){
-        printf("shmat failed");
+    sem_t * prod_sema = sem_open(PRODUCER_SEM_FNAME, O_CREAT, 0660, 1);
+    if (prod_sema == SEM_FAILED){
+        perror("sem_open/prod_sema");
         exit(EXIT_FAILURE);
     }
-
-    sem_shmid = shmget(IPC_PRIVATE, sizeof(sem_t), 0600 | IPC_CREAT);
-    if(sem_shmid == -1){
-        printf("shmget failed\n");
-        exit(EXIT_FAILURE);
-    }
-
-    //Attachement du sémaphore au segment de mémoire partagée
-    sem_t *prod_sema = shmat(sem_shmid, NULL, 0);
-    if(prod_sema == (void *)(-1)){
-        printf("shmat failed");
-        exit(EXIT_FAILURE);
-    }
-
-    //Initialisation d'un nouveau sémaphore sur sema
-    sem_init(cons_sema, 1, 1);
-    sem_init(prod_sema, 1, 0);
 
     print_previous_ranking(&current_session);
 
@@ -93,17 +77,21 @@ int main(int argc, char *argv[]){
     }
     else if(process_id == 0){
         //Processus enfant
-        drive_race_car(&race_car[i], &car_number[i], prod_sema, cons_sema);
+        drive_race_car(&race_car[i], &car_number[i], cons_sema, prod_sema);
         exit(0);
     }
     else{
         //Processus parent
-        show_score_table(race_car, prod_sema, cons_sema);
+        show_score_table(race_car, cons_sema, prod_sema);
 
         //Cette boucle permet au programme d'attendre que tous les processus enfants se ferment avant de continuer le programme
         for(int j = 0 ; j < 20 ; j++){
             wait(NULL);
         }
+
+        // On ferme et détruit les sémaphores
+        sem_close(cons_sema);
+        sem_close(prod_sema);
     }
 
 

@@ -58,7 +58,7 @@ float timeSector(){
  * @param prod_sema : sémaphore du producteur (processus fils)
  * @param cons_sema : sémaphore du consommateur (processus père)
  */
-void drive_race_car(struct Car *car, const int *carNum, sem_t *prod_sema, sem_t *cons_sema){
+void drive_race_car(struct Car *car, const int *carNum, sem_t * cons_sema, sem_t * prod_sema){
     srand(getpid());
     car -> idCar = *carNum;
     car -> tire_lifeTime = 5000 + rand() % 1000;
